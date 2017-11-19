@@ -17,6 +17,12 @@ body {
   outline: none;
 }
 
+.text-box:empty:before {
+  content: attr(placeholder);
+  display: block; /* For Firefox */
+  color: #cbcbcb;
+}
+
 .hashtag {
   color: #069fff;
 }
