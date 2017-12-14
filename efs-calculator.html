@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+  <div class="control-panel">
+    <div id="new-charge-container" class="new-charge-container">
+      <div class="button" id="add-charge-button">Add electric charge</div>
+    </div>
+    <div id="dielectric-constant-container" class="dielectric-constant-container">
+      Dielectric constant:
+      <input type="number" class="input" id="dielectric-constant-input" min="1" value="1">
+    </div>
+    <div class="scale-container">
+      <div class="scale-controls">
+        <div class="scale-button" id="scale-up-button"></div>
+        <div class="scale-button" id="scale-down-button"></div>
+      </div>
+    </div>
+    <div class="scale-ruler-container">
+      <div id="scale-value" class="scale-value"></div>
+      <div class="scale-ruler"></div>
+    </div>
+  </div>
+  <div id="charges-container" class="charges-container">
+    <canvas id="canvas" class="canvas"></canvas>
+  </div>
+  <script src="dist/bundle.js"></script>
+  </body>
+</html>
