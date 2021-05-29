@@ -1,0 +1,25 @@
+body, html {
+  padding: 0;
+  margin: 0;
+  background: #03045e;
+}
+.container {
+  padding: 10px;
+  display: flex;
+  align-items: flex-end;
+}
+.item {
+  margin-left: 1px;
+  flex-grow: 1;
+  background:  #0077b6;
+}
+
+.left-item {
+  background: #90e0ef;
+}
+.right-item {
+  background: #00b4d8;
+}
+.same-item {
+  background: #caf0f8;
+}
