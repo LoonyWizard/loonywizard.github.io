@@ -9,6 +9,16 @@ function wait(timeToWait = 1000 / OPERATIONS_PER_SECOND) {
 
 
 /*
+ * swaps two given elements in a given array
+ */
+function swap(arr, firstElementIndex, secondElementIndex) {
+  const t = arr[firstElementIndex]
+  arr[firstElementIndex] = arr[secondElementIndex]
+  arr[secondElementIndex] = t
+}
+
+
+/*
  * generates random number between min and max
  */
 function generateRandomNumber(min, max) {
@@ -46,7 +56,7 @@ function appendChildrenToHtmlElement(htmlElement, children) {
 function createContainerDiv() {
   const element = document.createElement('div')
 
-  element.classList.add('container')
+  element.classList.add('sorting-algo-container')
 
   return element
 }
@@ -70,67 +80,105 @@ function createArrayHtmlElement(value) {
  */
 function createHtmlArrayElements(arr) {
   const container = createContainerDiv()
+  const htmlWrapperElement = document.getElementById('wrapper')
 
   const elements = arr.map((arrItem) => createArrayHtmlElement(arrItem, container))
 
   appendChildrenToHtmlElement(container, elements)
-  appendChildrenToHtmlElement(document.body, [container])
+  appendChildrenToHtmlElement(htmlWrapperElement, [container])
 
   return elements
 }
 
 
 /*
- * quick sort (recursive approach) visualization
+ * partition function for quick sort in-place visualization
+ *
+ * reference: https://www.geeksforgeeks.org/quick-sort/
  */
-async function qsort(arr, shiftIndex = 0) {
-  if (arr.length < 2) return arr
+async function partition(arr, start, end) {
+  const pivotIndex = start
+  const pivotElement = arr[pivotIndex]
 
-  const baseElementIndex = 0
-  const baseElement = arr[baseElementIndex]
-  
-  const smallerElements = []
-  const sameElements = []
-  const greaterElements = []
+  htmlElementsQuickSort[start].classList.add(LEFT_ITEM_CSS_CLASS)
+  htmlElementsQuickSort[pivotIndex].classList.add(SAME_ITEM_CSS_CLASS)
+  htmlElementsQuickSort[end].classList.add(RIGHT_ITEM_CSS_CLASS)
 
-  for (let i = 0; i < arr.length; i++) {
-    if (arr[i] === baseElement) {
-      sameElements.push(baseElement)
-      htmlElementsQuickSort[i + shiftIndex].classList.add(SAME_ITEM_CSS_CLASS)
-    } else if (arr[i] < baseElement) {
-      smallerElements.push(arr[i])
-      htmlElementsQuickSort[i + shiftIndex].classList.add(LEFT_ITEM_CSS_CLASS)
-    } else {
-      greaterElements.push(arr[i])
-      htmlElementsQuickSort[i + shiftIndex].classList.add(RIGHT_ITEM_CSS_CLASS)
-    }
-    
-    await wait()
-  }
-
-  for (let i = shiftIndex; i < shiftIndex + arr.length; i++) {
-    htmlElementsQuickSort[i].classList.remove(LEFT_ITEM_CSS_CLASS)
-    htmlElementsQuickSort[i].classList.remove(SAME_ITEM_CSS_CLASS)
-    htmlElementsQuickSort[i].classList.remove(RIGHT_ITEM_CSS_CLASS)
-  }
-
-  
-  smallerElements.forEach((element, elementIndex) => {
-    htmlElementsQuickSort[shiftIndex + elementIndex].style.height = `${element}px`
-  })
-  sameElements.forEach((element, elementIndex) => {
-    htmlElementsQuickSort[shiftIndex + elementIndex + smallerElements.length].style.height = `${element}px`
-  })
-  greaterElements.forEach((element, elementIndex) => {
-    htmlElementsQuickSort[shiftIndex + smallerElements.length + sameElements.length + elementIndex].style.height = `${element}px`
-  })
-  
   await wait()
+  
+  while (start < end) {
+    while (start < arr.length && arr[start] <= pivotElement) {
+      if (htmlElementsQuickSort[start]) {
+        htmlElementsQuickSort[start].classList.remove(LEFT_ITEM_CSS_CLASS)
+        htmlElementsQuickSort[start].classList.remove(RIGHT_ITEM_CSS_CLASS)
+      }
+      
+      start++
+      
+      if (htmlElementsQuickSort[start]) {
+        htmlElementsQuickSort[start].classList.add(LEFT_ITEM_CSS_CLASS)
+      }
 
-  const left = await qsort(smallerElements, shiftIndex)
-  const right = await qsort(greaterElements, shiftIndex + smallerElements.length + sameElements.length)
+      await wait()
+    }
 
-  return [...left, ...sameElements, ...right]
+    while (arr[end] > pivotElement) {
+      if (htmlElementsQuickSort[end]) {
+        htmlElementsQuickSort[end].classList.remove(LEFT_ITEM_CSS_CLASS)
+        htmlElementsQuickSort[end].classList.remove(RIGHT_ITEM_CSS_CLASS)
+      }
+      
+      end--
+      
+      if (htmlElementsQuickSort[end]) {
+        htmlElementsQuickSort[end].classList.add(RIGHT_ITEM_CSS_CLASS)
+      }
+
+      await wait()
+    }
+
+    if (start < end) {
+      swap(arr, start, end)
+
+      htmlElementsQuickSort[start].classList.remove(LEFT_ITEM_CSS_CLASS)
+      htmlElementsQuickSort[start].classList.add(RIGHT_ITEM_CSS_CLASS)
+
+      htmlElementsQuickSort[end].classList.remove(RIGHT_ITEM_CSS_CLASS)
+      htmlElementsQuickSort[end].classList.add(LEFT_ITEM_CSS_CLASS)
+
+      htmlElementsQuickSort[start].style.height = `${arr[start]}px`
+      htmlElementsQuickSort[end].style.height = `${arr[end]}px`
+
+      await wait()
+    }
+  }
+
+  if (htmlElementsQuickSort[start]) {
+    htmlElementsQuickSort[start].classList.remove(LEFT_ITEM_CSS_CLASS)
+  }
+
+  swap(arr, pivotIndex, end)
+
+  htmlElementsQuickSort[pivotIndex].classList.remove(SAME_ITEM_CSS_CLASS)
+  htmlElementsQuickSort[end].classList.remove(RIGHT_ITEM_CSS_CLASS)
+
+  htmlElementsQuickSort[pivotIndex].style.height = `${arr[pivotIndex]}px`
+  htmlElementsQuickSort[end].style.height = `${arr[end]}px`
+
+  return end
+}
+
+
+/*
+ * quick sort visualization
+ */
+async function qsort(arr, start = 0, end = arr.length - 1) {
+  if (start >= end) return
+
+  const p = await partition(arr, start, end)
+
+  await qsort(arr, start, p - 1)
+  await qsort(arr, p + 1, end)
 }
 
 
@@ -199,6 +247,115 @@ async function mergeSort(arr, shiftIndex = 0) {
 
 
 /*
+ * MaxHeap is used in heap sort algorithm
+ */
+class MaxHeap {
+  constructor() {
+    this.heap = []
+  }
+
+  getLeftChildIndex = (parentIndex) => 2 * parentIndex + 1
+  getRightChildIndex = (parentIndex) => 2 * parentIndex + 2
+  getParentIndex = (childIndex) => Math.floor((childIndex - 1) / 2)
+
+  hasLeftChild = (index) => this.getLeftChildIndex(index) < this.heap.length
+  hasRightChild = (index) => this.getRightChildIndex(index) < this.heap.length
+  hasParent = (index) => this.getParentIndex(index) >= 0
+
+  getLeftChild = (index) => this.heap[this.getLeftChildIndex(index)]
+  getRightChild = (index) => this.heap[this.getRightChildIndex(index)]
+  getParent = (index) => this.heap[this.getParentIndex(index)]
+
+  swap(firstIndex, secondIndex) {
+    [this.heap[firstIndex], this.heap[secondIndex]] = [this.heap[secondIndex], this.heap[firstIndex]]
+  }
+
+  isEmpty() {
+    return this.heap.length === 0
+  }
+
+  async heapifyUp() {
+    let index = this.heap.length - 1
+
+    while (this.hasParent(index) && this.comparatorFn(this.heap[index], this.getParent(index))) {
+      const parentIndex = this.getParentIndex(index)
+      this.swap(index, parentIndex)
+      htmlElementsHeapSort[index].style.height = `${this.heap[index]}px`
+      htmlElementsHeapSort[parentIndex].style.height = `${this.heap[parentIndex]}px`
+      await wait()
+      index = parentIndex
+    }
+  }
+
+  async insert(nodeValue) {
+    this.heap.push(nodeValue)
+    await this.heapifyUp()
+  }
+
+  async heapifyDown() {
+    let index = 0
+
+    while (this.hasLeftChild(index)) {
+      let childIndexToReplace = this.getLeftChildIndex(index)
+      if (this.hasRightChild(index) && this.comparatorFn(this.getRightChild(index), this.getLeftChild(index))) {
+        childIndexToReplace = this.getRightChildIndex(index)
+      }
+
+      if (this.comparatorFn(this.heap[index], this.heap[childIndexToReplace])) {
+        break
+      }
+
+      this.swap(index, childIndexToReplace)
+      htmlElementsHeapSort[index].style.height = `${this.heap[index]}px`
+      htmlElementsHeapSort[childIndexToReplace].style.height = `${this.heap[childIndexToReplace]}px`
+      await wait()
+      index = childIndexToReplace
+    }
+  }
+
+  async pop() {
+    if (this.isEmpty()) throw new Error('Heap is empty!')
+
+    // remove first element
+    const item = this.heap[0]
+
+    if (this.heap.length <= 2) {
+      this.heap.shift()
+      return item
+    }
+
+    // insert last element to the beginning
+    this.heap[0] = this.heap.pop()
+
+    this.heapifyDown()
+
+    return item
+  }
+
+  comparatorFn(valueA, valueB) {
+    return valueA > valueB
+  }
+}
+
+/*
+ * heap sort visualization
+ */
+async function heapSort(arr) {
+  const heap = new MaxHeap()
+
+  for (let element of arr) {
+    await heap.insert(element)
+  }
+
+  for (let i = arr.length - 1; i >= 0; i--) {
+    arr[i] = await heap.pop()
+    await wait()
+    htmlElementsHeapSort[i].style.height = `${arr[i]}px`
+  }
+}
+
+
+/*
  * bubble sort visualization
  */
 async function bubbleSort(arr) {
@@ -213,9 +370,7 @@ async function bubbleSort(arr) {
       await wait()
 
       if (arr[j] > arr[j + 1]) {
-        const t = arr[j + 1]
-        arr[j + 1] = arr[j]
-        arr[j] = t
+        swap(arr, j, j + 1)
 
         htmlElementsBubbleSort[j].style.height = `${arr[j]}px`
         htmlElementsBubbleSort[j + 1].style.height = `${arr[j + 1]}px`
@@ -229,19 +384,65 @@ async function bubbleSort(arr) {
 
 
 /*
+ * insertion sort implementation
+ */
+async function insertionSort(arr) {
+  const n = arr.length
+
+  for (let i = 1; i < n; i++) {
+    let currentElementIndex = i
+
+    htmlElementsInsertionSort[currentElementIndex].classList.add(RIGHT_ITEM_CSS_CLASS)
+    await wait()
+
+    for (let j = i - 1; j >= 0; j--) {
+      htmlElementsInsertionSort[j].classList.add(LEFT_ITEM_CSS_CLASS)
+      await wait()
+
+      if (arr[currentElementIndex] >= arr[j]) {
+        htmlElementsInsertionSort[currentElementIndex].classList.remove(RIGHT_ITEM_CSS_CLASS)
+        htmlElementsInsertionSort[j].classList.remove(LEFT_ITEM_CSS_CLASS)
+        await wait()
+        break
+      }
+
+      swap(arr, currentElementIndex, j)
+
+      htmlElementsInsertionSort[currentElementIndex].style.height = `${arr[currentElementIndex]}px`
+      htmlElementsInsertionSort[j].style.height = `${arr[j]}px`
+
+      htmlElementsInsertionSort[currentElementIndex].classList.remove(RIGHT_ITEM_CSS_CLASS)
+      htmlElementsInsertionSort[j].classList.remove(LEFT_ITEM_CSS_CLASS)
+      htmlElementsInsertionSort[j].classList.add(RIGHT_ITEM_CSS_CLASS)
+
+      await wait()
+
+
+      currentElementIndex--
+    }
+
+    htmlElementsInsertionSort[currentElementIndex].classList.remove(LEFT_ITEM_CSS_CLASS)
+    htmlElementsInsertionSort[currentElementIndex].classList.remove(RIGHT_ITEM_CSS_CLASS)
+  }
+}
+
+
+/*
  * init array and html elements 
  */
-const initialRandomArray = generateRandomArray({ n: 150, min: 1, max: 500 })
+const initialRandomArray = generateRandomArray({ n: 40, min: 10, max: 500 })
 
 const htmlElementsQuickSort = createHtmlArrayElements(initialRandomArray)
 const htmlElementsMergeSort = createHtmlArrayElements(initialRandomArray)
+const htmlElementsHeapSort = createHtmlArrayElements(initialRandomArray)
 const htmlElementsBubbleSort = createHtmlArrayElements(initialRandomArray)
+const htmlElementsInsertionSort = createHtmlArrayElements(initialRandomArray)
 
 
 /*
  * declare constant
  */
-const OPERATIONS_PER_SECOND = 60
+const OPERATIONS_PER_SECOND = 20
 
 const LEFT_ITEM_CSS_CLASS = 'left-item'
 const SAME_ITEM_CSS_CLASS = 'same-item'
@@ -253,4 +454,6 @@ const RIGHT_ITEM_CSS_CLASS = 'right-item'
  */
 qsort([...initialRandomArray])
 mergeSort([...initialRandomArray])
+heapSort([...initialRandomArray])
 bubbleSort([...initialRandomArray])
+insertionSort([...initialRandomArray])
